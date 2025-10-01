@@ -149,3 +149,239 @@ backend/
     - Used for resume embeddings, question bank, and ideal answer comparisons.
 
     - Enables semantic search and contextual question generation.
+
+---
+
+## 6. Development Setup
+
+### Prerequisites
+- Python 3.10+
+- Docker and Docker Compose
+- Git
+
+### Quick Start
+
+#### 1. Clone and Setup Environment
+```bash
+# Clone the repository
+git clone <repository-url>
+cd ai-mock-interview/backend
+
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+#### 2. Database Setup with Docker
+
+**Start PostgreSQL with pgvector:**
+```bash
+# Start PostgreSQL with pgvector extension
+docker run --name ai-mock-interview-db \
+  -e POSTGRES_DB=ai_mock_interview \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=password \
+  -p 5432:5432 \
+  -d pgvector/pgvector:pg16
+
+# Verify database is running
+docker ps
+```
+
+**Alternative: Using Docker Compose (Recommended)**
+```bash
+# Create docker-compose.yml
+cat > docker-compose.yml << EOF
+version: '3.8'
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ai-mock-interview-db
+    environment:
+      POSTGRES_DB: ai_mock_interview
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+EOF
+
+# Start the database
+docker-compose up -d
+
+# Check if database is healthy
+docker-compose ps
+```
+
+#### 3. Environment Configuration
+
+**Create .env file:**
+```bash
+# Copy the sample environment file
+cp .env.sample .env
+
+# Edit the .env file with your settings
+nano .env
+```
+
+**Required .env variables:**
+```env
+# Database Configuration
+DATABASE_URL=postgresql://postgres:password@localhost:5432/ai_mock_interview
+
+# JWT Configuration
+JWT_SECRET_KEY=your-secret-key-change-this-in-production
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=180
+
+# AWS Configuration (for S3)
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=us-east-1
+S3_BUCKET_NAME=your-s3-bucket-name
+
+# AI Services
+CEREBRAS_API_KEY=your-cerebras-api-key
+CARTESIA_API_KEY=your-cartesia-api-key
+
+# LiveKit Configuration
+LIVEKIT_API_KEY=your-livekit-api-key
+LIVEKIT_API_SECRET=your-livekit-api-secret
+LIVEKIT_URL=wss://your-livekit-url
+```
+
+#### 4. Database Migration (Optional)
+
+**For production or when you want to use Alembic migrations:**
+```bash
+# Run database migrations
+alembic upgrade head
+```
+
+**Note:** The application will automatically create tables on startup if migrations haven't been run.
+
+#### 5. Start the Application
+
+```bash
+# Start the FastAPI server
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+# Or using Python directly
+python -m uvicorn main:app --reload
+```
+
+#### 6. Verify Setup
+
+**Check if everything is working:**
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# API documentation
+open http://localhost:8000/docs
+```
+
+### Development Commands
+
+**Database Management:**
+```bash
+# Connect to database
+docker exec -it ai-mock-interview-db psql -U postgres -d ai_mock_interview
+
+# Stop database
+docker stop ai-mock-interview-db
+
+# Start database
+docker start ai-mock-interview-db
+
+# Remove database (WARNING: This deletes all data)
+docker rm ai-mock-interview-db
+```
+
+**Alembic Commands:**
+```bash
+# Create new migration
+alembic revision --autogenerate -m "description"
+
+# Apply migrations
+alembic upgrade head
+
+# Rollback migration
+alembic downgrade -1
+
+# Check migration status
+alembic current
+```
+
+**Application Commands:**
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run with auto-reload
+uvicorn main:app --reload
+
+# Run tests (when implemented)
+pytest
+
+# Code formatting
+black .
+isort .
+```
+
+### Troubleshooting
+
+**Database Connection Issues:**
+```bash
+# Check if PostgreSQL is running
+docker ps | grep postgres
+
+# Check database logs
+docker logs ai-mock-interview-db
+
+# Test connection
+docker exec -it ai-mock-interview-db pg_isready -U postgres
+```
+
+**Port Conflicts:**
+```bash
+# Check if port 5432 is in use
+lsof -i :5432
+
+# Use different port
+docker run -p 5433:5432 pgvector/pgvector:pg16
+```
+
+**Environment Issues:**
+```bash
+# Check Python version
+python --version
+
+# Recreate virtual environment
+rm -rf venv
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Production Deployment
+
+**For production deployment:**
+1. Use proper environment variables
+2. Set up proper database with connection pooling
+3. Use Alembic migrations instead of auto-creation
+4. Configure proper CORS settings
+5. Set up monitoring and logging
+6. Use HTTPS and proper security headers
