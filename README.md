@@ -294,6 +294,28 @@ erDiagram
         TIMESTAMP uploaded_at
     }
 
+    COMPANIES {
+        UUID id PK
+        VARCHAR name
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    QUESTIONS {
+        UUID id PK
+        TEXT text
+        VARCHAR type
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    COMPANY_QUESTIONS {
+        UUID id PK
+        UUID company_id FK
+        UUID question_id FK
+        TIMESTAMP created_at
+    }
+
     INTERVIEWS {
         UUID id PK
         UUID candidate_id FK
