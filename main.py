@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from auth.routes import router as auth_router
+from resume.routes import router as resume_router
 from config.database import engine
 from auth.models import Base
 
@@ -40,6 +41,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_router)
+app.include_router(resume_router)
 
 @app.get("/")
 async def root():
