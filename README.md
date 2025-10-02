@@ -272,7 +272,62 @@ alembic upgrade head
 
 **Note:** The application will automatically create tables on startup if migrations haven't been run.
 
-#### 5. Start the Application
+#### 5. ERD Diagram
+
+```mermaid
+erDiagram
+    USERS {
+        UUID user_id PK
+        VARCHAR username
+        VARCHAR email
+        TEXT password
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    RESUMES {
+        UUID id PK
+        UUID user_id FK
+        TEXT file_url
+        VECTOR(1536) embedding_vector
+        TIMESTAMP uploaded_at
+    }
+
+    INTERVIEWS {
+        UUID id PK
+        UUID candidate_id FK
+        VARCHAR status
+        INTERVAL duration
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    INTERVIEW_TRANSCRIPTS {
+        UUID id PK
+        UUID interview_id FK
+        VARCHAR speaker
+        TEXT message_text
+        TIMESTAMP created_at
+    }
+
+    FEEDBACK {
+        UUID id PK
+        UUID interview_id FK
+        INTEGER rating
+        JSONB scores
+        TEXT comments
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    USERS ||--o{ RESUMES : uploads
+    USERS ||--o{ INTERVIEWS : "candidate"
+    INTERVIEWS ||--o{ INTERVIEW_TRANSCRIPTS : has
+    INTERVIEWS ||--o{ FEEDBACK : has
+
+```
+
+#### 6. Start the Application
 
 ```bash
 # Start the FastAPI server
@@ -375,13 +430,3 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
-
-### Production Deployment
-
-**For production deployment:**
-1. Use proper environment variables
-2. Set up proper database with connection pooling
-3. Use Alembic migrations instead of auto-creation
-4. Configure proper CORS settings
-5. Set up monitoring and logging
-6. Use HTTPS and proper security headers
