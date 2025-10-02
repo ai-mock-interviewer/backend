@@ -39,6 +39,33 @@ async def get_all_questions(
         total_count=len(questions)
     )
 
+@router.get("/question/{company_id}", response_model=QuestionListResponse)
+async def get_questions_by_company(
+    company_id: UUID,
+    type: Optional[str] = Query(None, description="Filter by question type"),
+    db: Session = Depends(get_db)
+):
+    """Get all questions for a specific company"""
+    question_service = QuestionService(db)
+    
+    if type:
+        questions = question_service.get_company_questions_by_type(company_id, type)
+    else:
+        questions = question_service.get_questions_by_company(company_id)
+    
+    return QuestionListResponse(
+        questions=[
+            QuestionResponse(
+                id=question.id,
+                text=question.text,
+                type=question.type,
+                created_at=question.created_at,
+                updated_at=question.updated_at
+            ) for question in questions
+        ],
+        total_count=len(questions)
+    )
+
 @router.get("/{question_id}", response_model=QuestionResponse)
 async def get_question(
     question_id: UUID,
