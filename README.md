@@ -288,6 +288,7 @@ erDiagram
     RESUMES {
         UUID id PK
         UUID user_id FK
+        TEXT file_name
         TEXT file_url
         VECTOR(1536) embedding_vector
         TIMESTAMP uploaded_at
