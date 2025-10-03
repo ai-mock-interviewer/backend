@@ -65,3 +65,64 @@ async def delete_resume(
         raise HTTPException(status_code=404, detail="Resume not found")
     
     return {"message": "Resume deleted successfully"}
+
+@router.get("/similar")
+async def find_similar_resumes(
+    query: str,
+    limit: int = 10,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Find resumes similar to the given query text"""
+    resume_service = ResumeService(db)
+    similar_resumes = resume_service.find_similar_resumes(
+        query_text=query,
+        limit=limit,
+        user_id=current_user.user_id
+    )
+    
+    return ResumeListResponse(
+        resumes=[
+            ResumeResponse(
+                id=resume.id,
+                user_id=resume.user_id,
+                file_name=resume.file_name,
+                file_url=resume.file_url,
+                uploaded_at=resume.uploaded_at
+            ) for resume in similar_resumes
+        ],
+        total_count=len(similar_resumes)
+    )
+
+@router.get("/{resume_id}/similar")
+async def find_similar_to_resume(
+    resume_id: UUID,
+    limit: int = 10,
+    current_user: User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Find resumes similar to a specific resume"""
+    resume_service = ResumeService(db)
+    
+    # First verify the user owns the resume
+    resume = resume_service.get_resume_by_id(resume_id)
+    if not resume or resume.user_id != current_user.user_id:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    similar_resumes = resume_service.find_resumes_by_similarity_to_resume(
+        resume_id=resume_id,
+        limit=limit
+    )
+    
+    return ResumeListResponse(
+        resumes=[
+            ResumeResponse(
+                id=resume.id,
+                user_id=resume.user_id,
+                file_name=resume.file_name,
+                file_url=resume.file_url,
+                uploaded_at=resume.uploaded_at
+            ) for resume in similar_resumes
+        ],
+        total_count=len(similar_resumes)
+    )
