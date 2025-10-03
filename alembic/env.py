@@ -9,8 +9,12 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import your models
-from auth.models import Base
-from config.database import Base as ConfigBase
+from config.database import Base
+# Import all models so Alembic can see them
+from auth.models import User
+from resume.models import Resume
+from company.models import Company
+from questions.models import Question, CompanyQuestion
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

@@ -3,6 +3,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
+from config.database import Base
 
 class Question(Base):
     """Question model for storing interview questions"""

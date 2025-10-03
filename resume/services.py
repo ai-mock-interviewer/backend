@@ -3,9 +3,14 @@ from sqlalchemy import and_
 from typing import Optional, List
 from fastapi import UploadFile, HTTPException
 import uuid
+from uuid import UUID
 from sentence_transformers import SentenceTransformer
 import json
-import magic  # python-magic for file type detection
+try:
+    import magic  # python-magic for file type detection
+    MAGIC_AVAILABLE = True
+except ImportError:
+    MAGIC_AVAILABLE = False
 
 from .models import Resume
 from .schemas import ResumeUploadResponse, ResumeResponse
@@ -30,12 +35,13 @@ class ResumeService:
             file_content = file.file.read()
             file.file.seek(0)  # Reset file pointer
             
-            # Check MIME type using python-magic
-            mime_type = magic.from_buffer(file_content, mime=True)
-            if mime_type != 'application/pdf':
-                return False
+            # Check MIME type using python-magic if available
+            if MAGIC_AVAILABLE:
+                mime_type = magic.from_buffer(file_content, mime=True)
+                if mime_type != 'application/pdf':
+                    return False
             
-            # Additional PDF header validation
+            # Additional PDF header validation (always check this)
             if not file_content.startswith(b'%PDF-'):
                 return False
             

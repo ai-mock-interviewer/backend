@@ -82,6 +82,7 @@ async def login(
     )
     
     return TokenResponse(
+        user= user,
         access_token=access_token,
         token_type="bearer",
         expires_in=3 * 60 * 60  # 3 hours in seconds

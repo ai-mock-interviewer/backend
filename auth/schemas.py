@@ -57,6 +57,7 @@ class UserResponse(BaseModel):
 
 class TokenResponse(BaseModel):
     """Schema for token response"""
+    user: UserResponse
     access_token: str
     token_type: str = "bearer"
     expires_in: int  # seconds

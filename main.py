@@ -1,11 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from auth.routes import router as auth_router
 from resume.routes import router as resume_router
-from config.database import engine
-from auth.models import Base
+from config.database import engine, Base
 
 # Application lifespan
 @asynccontextmanager
